@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.trilogy.ccab.grpc.api";
+option java_outer_classname = "ChargingEngineProto";
+option objc_class_prefix = "CCAB";
+
+package charging;
+
+service ChargingEngine {
+  rpc ChargeRequest (ChargingRequest) returns (ChargingResponse) {}
+  rpc CreditBalance (CreditRequest) returns (CreditResponse) {}
+}
+
+enum ChargingRequestType {
+  UNKNOWN_REQUEST_TYPE = 0;
+  INITIAL_REQUEST = 1;
+  UPDATE_REQUEST = 2;
+  TERMINATION_REQUEST = 3;
+  EVENT_REQUEST = 4;
+}
+
+enum ResultCode {
+  UNKNOWN_RESULT_CODE = 0;
+  SUCCESS = 2001;
+  AUTHENTICATION_REJECTED = 4001;
+  END_USER_SERVICE_DENIED = 4010; // serviceType is not supported or restricted for the user
+  CREDIT_CONTROL_NOT_APPLICABLE = 4011; // the service can be granted to the end user but that no further credit-control is needed for the service (e.g., the service is free of charge)
+  CREDIT_LIMIT_REACHED = 4012; // e.g., insufficient balance
+  COMMIT_FAILURE = 4043; // e.g., after several failures to write a transaction
+  UNKNOWN_SESSION_ID = 5002;
+  AUTHORIZATION_REJECTED = 5003; // e.g., a provider in the request is not a provider of authenticated user
+  UNABLE_TO_COMPLY = 5012; // rejected because of unspecified reasons (e.g., DynamoDB InternalFailure or ThrottlingException)
+  USER_UNKNOWN = 5030; // a subscriber in the request does not belong to the provider of authenticated user
+  RATING_FAILED = 5031; // cannot rate due to insufficient input (e.g., sequenceNum or requestType is wrong, negative unitsRequested)
+}
+
+message ChargingResponse {
+  string chargingRequestId = 1;
+  ResultCode result = 2;
+  string errorMessage = 3;
+
+  Balance balance = 4;
+  Session session = 5;
+}
+
+message ChargingRequest {
+  string provider = 1;
+  string id = 2;
+  string subscriber = 3;
+  uint64 eventDate = 4;
+  uint32 sequenceNum = 5;
+  string serviceType = 6;
+  float unitsUsed = 7;
+  float unitsRequested = 8;
+  ChargingRequestType requestType = 9;
+
+  Session session = 10;
+}
+
+message Session {
+  string id = 1;
+  float reserved = 2;
+}
+
+message Balance {
+  float balance = 1;
+  float reserved = 2;
+}
+
+message CreditRequest {
+  string provider = 1;
+  string id = 2;
+  string subscriber = 3;
+  uint64 eventDate = 4;
+  uint32 sequenceNum = 5;
+  string serviceType = 6;
+  float unitsRequested = 7;
+}
+
+message CreditResponse {
+  string creditRequestId = 1;
+  ResultCode result = 2;
+  string errorMessage = 3;
+
+  Balance balance = 4;
+}

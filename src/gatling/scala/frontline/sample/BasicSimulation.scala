@@ -22,21 +22,20 @@ import io.gatling.core.structure.ScenarioBuilder
 
 
 class BasicSimulation extends Simulation {
-
-  val httpConf = http
-    .baseUrl("http://computer-database.gatling.io")
+  val chargingRequestTerminateMessage: Expression[ChargingRequest] = ChargingRequest.newBuilder().build()
+      .update(_.setId)("id")
+      .update(_.setProvider)("provider")
+      .update(_.setRequestType)(ChargingRequestType.TERMINATION_REQUEST)
+      
+  def chargingRequestTerminate(name: String): GrpcCallActionBuilder[ChargingRequest, ChargingResponse] = grpc(name)
+    .rpc(ChargingEngineGrpc.getChargeRequestMethod)
+    .payload(chargingRequestTerminateMessage)
 
   val scn = scenario("scenario1")
-    .exec(
-      http("Page 0")
-        .get("/computers?p=0")
-    )
-    .exec(
-      http("Page 1")
-        .get("/computers?p=1")
-    )
+    .exec(chargingRequestTerminate("Terminate"))
+  val grpcConf: StaticGrpcProtocol = grpc(managedChannelBuilder("charge-engine-dev.private.central-eks.aureacentral.com", 443)).shareChannel
 
   setUp(
     scn.inject(rampUsers(10).during(10.seconds))
-  ).protocols(httpConf)
+  ).protocols(grpcConf)
 }

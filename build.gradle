@@ -2,6 +2,12 @@ plugins {
   id 'io.gatling.frontline.gradle'
 }
 
+dependencies {
+  gatling 'com.github.phisgr:gatling-javapb:1.1.1'
+  gatling 'com.github.phisgr:gatling-grpc:0.11.1'
+}
+
+
 repositories {
   mavenCentral()
   jcenter()

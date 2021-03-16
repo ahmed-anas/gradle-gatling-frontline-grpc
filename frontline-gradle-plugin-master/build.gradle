@@ -1,0 +1,36 @@
+plugins {
+  id 'java-gradle-plugin'
+  id 'com.gradle.plugin-publish' version '0.12.0'
+  id 'groovy'
+}
+
+repositories {
+  jcenter()
+  mavenCentral()
+  maven {
+    url "https://plugins.gradle.org/m2/"
+  }
+}
+
+dependencies {
+  implementation gradleApi()
+  implementation "com.github.jengelman.gradle.plugins:shadow:5.2.0"
+  runtimeOnly "gradle.plugin.io.gatling.gradle:gatling-gradle-plugin:3.5.1"
+}
+
+pluginBundle {
+  website = 'https://github.com/gatling/frontline-gradle-plugin'
+  vcsUrl = 'https://github.com/gatling/frontline-gradle-plugin'
+  tags = ['frontline', 'gatling', 'load test', 'stress test', 'performance test', 'scala']
+}
+
+gradlePlugin {
+  plugins {
+    frontLinePlugin {
+      id = 'io.gatling.frontline.gradle'
+      displayName = 'Gatling FrontLine integration with gradle'
+      description = 'A plugin for packaging bundle to be deployed with Gatling FrontLine'
+      implementationClass = 'io.gatling.frontline.gradle.FrontLinePlugin'
+    }
+  }
+}
